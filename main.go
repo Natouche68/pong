@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -13,8 +14,16 @@ type Model struct {
 	grid         [][]string
 }
 
+type TickMsg struct{}
+
+func doTick() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return TickMsg{}
+	})
+}
+
 func (m Model) Init() tea.Cmd {
-	return nil
+	return doTick()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -35,6 +44,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.grid[i][j] = " "
 			}
 		}
+
+	case TickMsg:
+		return m, doTick()
 	}
 
 	return m, nil
