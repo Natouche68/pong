@@ -89,8 +89,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TickMsg:
 		m.ball.x += m.ball.xVelocity
 		m.ball.y += m.ball.yVelocity
-		if m.ball.x <= 0 || m.ball.x >= m.screenWidth-2 {
+		if m.ball.x <= 0 {
 			m.ball.xVelocity *= -1
+			if m.ball.y < m.leftPad.y || m.ball.y >= m.leftPad.y+m.leftPad.size {
+				return m, tea.Quit
+			}
+		}
+		if m.ball.x >= m.screenWidth-2 {
+			m.ball.xVelocity *= -1
+			if m.ball.y < m.rightPad.y || m.ball.y >= m.rightPad.y+m.rightPad.size {
+				return m, tea.Quit
+			}
 		}
 		if m.ball.y <= 0 || m.ball.y >= m.screenHeight-2 {
 			m.ball.yVelocity *= -1
