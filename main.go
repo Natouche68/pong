@@ -11,13 +11,20 @@ import (
 type Model struct {
 	screenWidth  int
 	screenHeight int
-	grid         [][]string
+	ball         Ball
+}
+
+type Ball struct {
+	x         int
+	y         int
+	xVelocity int
+	yVelocity int
 }
 
 type TickMsg struct{}
 
 func doTick() tea.Cmd {
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Second/30, func(t time.Time) tea.Msg {
 		return TickMsg{}
 	})
 }
@@ -37,15 +44,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.screenWidth = msg.Width
 		m.screenHeight = msg.Height
-		m.grid = make([][]string, m.screenHeight)
-		for i := range m.grid {
-			m.grid[i] = make([]string, m.screenWidth)
-			for j := range m.grid[i] {
-				m.grid[i][j] = " "
-			}
-		}
 
 	case TickMsg:
+		m.ball.x += m.ball.xVelocity
+		m.ball.y += m.ball.yVelocity
+		if m.ball.x <= 0 || m.ball.x >= m.screenWidth-1 {
+			m.ball.xVelocity *= -1
+		}
+		if m.ball.y <= 0 || m.ball.y >= m.screenHeight-1 {
+			m.ball.yVelocity *= -1
+		}
 		return m, doTick()
 	}
 
@@ -53,11 +61,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := ""
+	if m.screenWidth == 0 || m.screenHeight == 0 {
+		return ""
+	}
 
-	for i := range m.grid {
-		for j := range m.grid[i] {
-			s += m.grid[i][j]
+	grid := make([][]string, m.screenHeight)
+	for i := range grid {
+		grid[i] = make([]string, m.screenWidth)
+		for j := range grid[i] {
+			grid[i][j] = " "
+		}
+	}
+
+	grid[m.ball.y][m.ball.x] = "@"
+
+	s := ""
+	for i := range grid {
+		for j := range grid[i] {
+			s += grid[i][j]
 		}
 		s += "\n"
 	}
@@ -66,7 +87,14 @@ func (m Model) View() string {
 }
 
 func main() {
-	p := tea.NewProgram(Model{}, tea.WithAltScreen())
+	p := tea.NewProgram(Model{
+		ball: Ball{
+			x:         0,
+			y:         0,
+			xVelocity: 1,
+			yVelocity: 1,
+		},
+	}, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error running program :", err)
 		os.Exit(1)
