@@ -49,6 +49,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
+		case "enter":
+			if !m.gameStarted {
+				m.gameStarted = true
+				m.ball = Ball{
+					x:         0,
+					y:         0,
+					xVelocity: 2,
+					yVelocity: 1,
+				}
+				m.leftPad = Pad{
+					y:         0,
+					yVelocity: 1,
+					size:      m.screenHeight / 4,
+				}
+				m.rightPad = Pad{
+					y:         0,
+					yVelocity: 1,
+					size:      m.screenHeight / 4,
+				}
+			}
+
 		case "z", "w":
 			m.leftPad.yVelocity = -1
 
@@ -66,27 +87,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.screenWidth = msg.Width
 		m.screenHeight = msg.Height
 
+	case TickMsg:
 		if !m.gameStarted {
-			m.gameStarted = true
-			m.ball = Ball{
-				x:         0,
-				y:         0,
-				xVelocity: 2,
-				yVelocity: 1,
-			}
-			m.leftPad = Pad{
-				y:         0,
-				yVelocity: 1,
-				size:      m.screenHeight / 4,
-			}
-			m.rightPad = Pad{
-				y:         0,
-				yVelocity: 1,
-				size:      m.screenHeight / 4,
-			}
+			return m, doTick()
 		}
 
-	case TickMsg:
 		m.ball.x += m.ball.xVelocity
 		m.ball.y += m.ball.yVelocity
 		if m.ball.x <= 0 {
@@ -119,8 +124,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if m.screenWidth == 0 || m.screenHeight == 0 {
-		return ""
+	if !m.gameStarted {
+		return "Press ENTER to start game..."
 	}
 
 	grid := make([][]string, m.screenHeight)
