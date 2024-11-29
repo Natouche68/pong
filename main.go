@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -54,8 +55,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if !m.gameStarted {
 				m.gameStarted = true
 				m.ball = Ball{
-					x:         0,
-					y:         0,
+					x:         m.screenWidth/3 + rand.Intn(m.screenWidth/3),
+					y:         rand.Intn(m.screenHeight),
 					xVelocity: 2,
 					yVelocity: 1,
 				}
