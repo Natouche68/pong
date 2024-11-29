@@ -145,7 +145,9 @@ func (m Model) View() string {
 		for j := range grid[i] {
 			s += grid[i][j]
 		}
-		s += "\n"
+		if i < m.screenHeight-1 {
+			s += "\n"
+		}
 	}
 
 	return s
