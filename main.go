@@ -60,12 +60,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					yVelocity: 1,
 				}
 				m.leftPad = Pad{
-					y:         0,
+					y:         m.screenHeight / 3,
 					yVelocity: 1,
 					size:      m.screenHeight / 4,
 				}
 				m.rightPad = Pad{
-					y:         0,
+					y:         m.screenHeight / 3,
 					yVelocity: 1,
 					size:      m.screenHeight / 4,
 				}
