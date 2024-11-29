@@ -10,6 +10,7 @@ import (
 
 type Model struct {
 	gameStarted  bool
+	gameOver     bool
 	screenWidth  int
 	screenHeight int
 	ball         Ball
@@ -97,13 +98,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.ball.x <= 0 {
 			m.ball.xVelocity *= -1
 			if m.ball.y < m.leftPad.y || m.ball.y >= m.leftPad.y+m.leftPad.size {
-				return m, tea.Quit
+				m.gameOver = true
+				m.gameStarted = false
 			}
 		}
 		if m.ball.x >= m.screenWidth-2 {
 			m.ball.xVelocity *= -1
 			if m.ball.y < m.rightPad.y || m.ball.y >= m.rightPad.y+m.rightPad.size {
-				return m, tea.Quit
+				m.gameOver = true
+				m.gameStarted = false
 			}
 		}
 		if m.ball.y <= 0 || m.ball.y >= m.screenHeight-2 {
@@ -125,7 +128,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	if !m.gameStarted {
-		return "Press ENTER to start game..."
+		if m.gameOver {
+			return "GAME OVER !\nPress ENTER to restart..."
+		} else {
+			return "Press ENTER to start game..."
+		}
 	}
 
 	grid := make([][]string, m.screenHeight)
