@@ -9,9 +9,12 @@ import (
 )
 
 type Model struct {
+	gameStarted  bool
 	screenWidth  int
 	screenHeight int
 	ball         Ball
+	leftPad      Pad
+	rightPad     Pad
 }
 
 type Ball struct {
@@ -21,10 +24,16 @@ type Ball struct {
 	yVelocity int
 }
 
+type Pad struct {
+	y         int
+	yVelocity int
+	size      int
+}
+
 type TickMsg struct{}
 
 func doTick() tea.Cmd {
-	return tea.Tick(time.Second/30, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Second/16, func(t time.Time) tea.Msg {
 		return TickMsg{}
 	})
 }
@@ -39,21 +48,61 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+
+		case "z", "w":
+			m.leftPad.yVelocity = -1
+
+		case "s":
+			m.leftPad.yVelocity = 1
+
+		case "up":
+			m.rightPad.yVelocity = -1
+
+		case "down":
+			m.rightPad.yVelocity = 1
 		}
 
 	case tea.WindowSizeMsg:
 		m.screenWidth = msg.Width
 		m.screenHeight = msg.Height
 
+		if !m.gameStarted {
+			m.gameStarted = true
+			m.ball = Ball{
+				x:         0,
+				y:         0,
+				xVelocity: 2,
+				yVelocity: 1,
+			}
+			m.leftPad = Pad{
+				y:         0,
+				yVelocity: 1,
+				size:      m.screenHeight / 4,
+			}
+			m.rightPad = Pad{
+				y:         0,
+				yVelocity: 1,
+				size:      m.screenHeight / 4,
+			}
+		}
+
 	case TickMsg:
 		m.ball.x += m.ball.xVelocity
 		m.ball.y += m.ball.yVelocity
-		if m.ball.x <= 0 || m.ball.x >= m.screenWidth-1 {
+		if m.ball.x <= 0 || m.ball.x >= m.screenWidth-2 {
 			m.ball.xVelocity *= -1
 		}
-		if m.ball.y <= 0 || m.ball.y >= m.screenHeight-1 {
+		if m.ball.y <= 0 || m.ball.y >= m.screenHeight-2 {
 			m.ball.yVelocity *= -1
 		}
+
+		if (m.leftPad.yVelocity == -1 && m.leftPad.y > 0) || (m.leftPad.yVelocity == 1 && m.leftPad.y < m.screenHeight-m.leftPad.size) {
+			m.leftPad.y += m.leftPad.yVelocity
+		}
+		if (m.rightPad.yVelocity == -1 && m.rightPad.y > 0) || (m.rightPad.yVelocity == 1 && m.rightPad.y < m.screenHeight-m.rightPad.size) {
+			m.rightPad.y += m.rightPad.yVelocity
+		}
+
 		return m, doTick()
 	}
 
@@ -75,6 +124,13 @@ func (m Model) View() string {
 
 	grid[m.ball.y][m.ball.x] = "@"
 
+	for i := 0; i < m.leftPad.size; i++ {
+		grid[m.leftPad.y+i][0] = "#"
+	}
+	for i := 0; i < m.rightPad.size; i++ {
+		grid[m.rightPad.y+i][m.screenWidth-1] = "#"
+	}
+
 	s := ""
 	for i := range grid {
 		for j := range grid[i] {
@@ -88,12 +144,7 @@ func (m Model) View() string {
 
 func main() {
 	p := tea.NewProgram(Model{
-		ball: Ball{
-			x:         0,
-			y:         0,
-			xVelocity: 1,
-			yVelocity: 1,
-		},
+		gameStarted: false,
 	}, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error running program :", err)
