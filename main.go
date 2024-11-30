@@ -57,7 +57,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.gameStarted = true
 				m.ball = Ball{
 					x:         m.screenWidth/3 + rand.Intn(m.screenWidth/3),
-					y:         rand.Intn(m.screenHeight),
+					y:         rand.Intn(m.screenHeight - 1),
 					xVelocity: 2,
 					yVelocity: 1,
 				}
