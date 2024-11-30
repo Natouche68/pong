@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Model struct {
@@ -128,6 +129,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	ballStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Bold(true)
+	leftPadStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+	rightPadStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
+
 	if !m.gameStarted {
 		if m.gameOver {
 			return "GAME OVER !\nPress ENTER to restart..."
@@ -144,13 +149,13 @@ func (m Model) View() string {
 		}
 	}
 
-	grid[m.ball.y][m.ball.x] = "@"
+	grid[m.ball.y][m.ball.x] = ballStyle.Render("@")
 
 	for i := 0; i < m.leftPad.size; i++ {
-		grid[m.leftPad.y+i][0] = "#"
+		grid[m.leftPad.y+i][0] = leftPadStyle.Render("#")
 	}
 	for i := 0; i < m.rightPad.size; i++ {
-		grid[m.rightPad.y+i][m.screenWidth-1] = "#"
+		grid[m.rightPad.y+i][m.screenWidth-1] = rightPadStyle.Render("#")
 	}
 
 	s := ""
